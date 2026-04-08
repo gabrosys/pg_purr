@@ -1,0 +1,52 @@
+# Version control
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Python build / test artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+dist/
+build/
+.venv/
+venv/
+env/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# Local environment / secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+.aws/
+.ssh/
+
+# Logs
+*.log
+logs/
+
+# Project-local tooling
+.claude/
+.draft/

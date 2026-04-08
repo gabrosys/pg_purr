@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pg_purr"
+version = "0.1.0"
+description = "PostgreSQL Unified Random & Routing — quantum computing for your database"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{name = "Gabriele Rossini"}]
+keywords = ["postgresql", "quantum", "qrng", "query-planner", "plpython3u", "annealing"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: SQL",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "dwave-neal>=0.6",
+    "dimod>=0.12",
+    "requests>=2.31",
+    "numpy>=1.26",
+    "pglast>=6,<8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+    "psycopg2-binary>=2.9",
+]
+dwave = ["dwave-system>=1.0"]
+
+[project.scripts]
+pg-purr-filler = "pg_purr.qrng.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/gabrosys/pg_purr"
+Repository = "https://github.com/gabrosys/pg_purr"
+Issues = "https://github.com/gabrosys/pg_purr/issues"
+
+[tool.setuptools.packages.find]
+include = ["pg_purr*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires a running PostgreSQL (docker compose).",
+]
