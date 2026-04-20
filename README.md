@@ -36,6 +36,17 @@ make test-integration PG_VERSION=18
 make test-all-versions
 ```
 
+## Try it live
+
+For a hands-on walkthrough against the real quantum random number services, see `examples/qrng/` — six short scripts that boot a container, fill the entropy pool over HTTPS, confirm the distribution is uniform, and demonstrate the automatic fallback when the primary source fails.
+
+```bash
+cd examples/qrng
+./00_setup.sh && ./01_show_empty_pool.sh && ./02_run_filler.sh
+./03_consume_and_inspect.sh && ./04_force_nist_fallback.sh
+./05_teardown.sh
+```
+
 ## Installation
 
 ### 1. Install the Python package on the server
