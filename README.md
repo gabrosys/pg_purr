@@ -38,14 +38,25 @@ make test-all-versions
 
 ## Try it live
 
-For a hands-on walkthrough against the real quantum random number services, see `examples/qrng/` — six short scripts that boot a container, fill the entropy pool over HTTPS, confirm the distribution is uniform, and demonstrate the automatic fallback when the primary source fails.
+Two hands-on demos live under `examples/`:
 
-```bash
-cd examples/qrng
-./00_setup.sh && ./01_show_empty_pool.sh && ./02_run_filler.sh
-./03_consume_and_inspect.sh && ./04_force_nist_fallback.sh
-./05_teardown.sh
-```
+- **`examples/qrng/`** — walkthrough of the QRNG against real quantum random number services (LfD OTH Regensburg + NIST Randomness Beacon). Six scripts; boots a container, fills the entropy pool over HTTPS, confirms the distribution is uniform, and demonstrates the automatic fallback when the primary source fails. No credentials needed.
+
+  ```bash
+  cd examples/qrng
+  ./00_setup.sh && ./01_show_empty_pool.sh && ./02_run_filler.sh
+  ./03_consume_and_inspect.sh && ./04_force_nist_fallback.sh
+  ./05_teardown.sh
+  ```
+
+- **`examples/planner/`** — walkthrough of `purr.quantum_query_plan()` on a 13-table retail schema. Six scripts; boots a container, seeds the schema, compares PostgreSQL's own GEQO plan against the QUBO-based local annealer, and optionally runs the same query on a real D-Wave quantum processing unit when a Leap API token is supplied. Token setup is documented in the demo's README.
+
+  ```bash
+  cd examples/planner
+  ./00_setup.sh && ./01_seed_schema.sh && ./02_baseline_explain.sh
+  ./03_local_solver.sh && ./04_dwave_solver.sh
+  ./05_teardown.sh
+  ```
 
 ## Installation
 
