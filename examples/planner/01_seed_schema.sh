@@ -32,9 +32,9 @@ ORDER BY table_name;
 
 cat <<'EOF'
 
-13 tables, ~20 000 rows total. A non-trivial JOIN graph: the next three
-steps will run the same 13-way INNER JOIN through different planners
-and you can compare their chosen orderings.
+13 tables, ~20 000 rows total. A non-trivial JOIN graph: the next two
+steps run the same 13-way INNER JOIN through PostgreSQL's own planner
+and through pg_purr, so you can compare their chosen orderings.
 
 Next: ./02_baseline_explain.sh
 EOF

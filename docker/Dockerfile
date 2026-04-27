@@ -42,7 +42,7 @@ FROM postgres:${PG_VERSION}-bookworm AS runtime
 ARG PG_VERSION
 ARG VCS_REF=unknown
 ARG BUILD_DATE=1970-01-01T00:00:00Z
-ARG VERSION=0.1.0
+ARG VERSION=0.2.0
 
 LABEL org.opencontainers.image.title="pg_purr" \
       org.opencontainers.image.description="PostgreSQL Unified Random & Routing" \

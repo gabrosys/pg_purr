@@ -1,6 +1,6 @@
 # pg_purr extension
 comment = 'Quantum query planner and QRNG for PostgreSQL'
-default_version = '0.1.0'
+default_version = '0.2.0'
 module_pathname = ''
 relocatable = false
 schema = 'purr'

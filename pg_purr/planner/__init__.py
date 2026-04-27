@@ -1,6 +1,9 @@
-"""pg_purr.planner: Quantum-annealing-based query plan optimizer.
+"""pg_purr.planner: hybrid quantum query planner for PostgreSQL.
 
-Provides tools to parse PostgreSQL EXPLAIN output, build QUBO
-(Quadratic Unconstrained Binary Optimization) models for JOIN ordering,
-and solve them using simulated or quantum annealing.
+Parses EXPLAIN output, extracts the predicate graph from a SQL
+query, generates candidate spanning trees of that graph, selects
+one via QAOA on the local AerSimulator, and linearises it into a
+connected join order. The classical scaffolding guarantees that
+every emitted order is connected, regardless of the quantum step's
+quality.
 """

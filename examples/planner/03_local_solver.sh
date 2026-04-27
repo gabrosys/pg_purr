@@ -1,39 +1,36 @@
 #!/usr/bin/env bash
-# Run purr.quantum_query_plan with use_dwave := false.
-# Classical simulated annealing on CPU — no token needed.
+# Run purr.quantum_query_plan on the demo query.
+# QAOA on AerSimulator — no token needed, deterministic.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PLANNER_DIR="${REPO_ROOT}/examples/planner"
 
-echo "==> Calling purr.quantum_query_plan(..., use_dwave := false)..."
+echo "==> Calling purr.quantum_query_plan(...)..."
 docker cp "${PLANNER_DIR}/query.sql" pg-purr-test:/tmp/query.sql >/dev/null
 
-# The query must be passed as a single text argument to the function.
-# Use dollar-quoting ($q$ ... $q$) to avoid escaping the single quotes
-# inside the WHERE clause. The whole SELECT is built on the fly as a
-# here-doc piped into psql.
 docker exec -i pg-purr-test bash -c '
 QUERY=$(cat /tmp/query.sql)
 psql -U test -d pg_purr_test <<SQL
 SELECT step, table_name, estimated_cost
 FROM purr.quantum_query_plan(
-    \$q\$${QUERY}\$q\$,
-    use_dwave := false
+    \$q\$${QUERY}\$q\$
 );
 SQL
 '
 
 cat <<'EOF'
 
-This is the QUBO-based ordering solved by classical simulated
-annealing (dwave-neal, CPU). Each row is one table in the chosen
-JOIN order; estimated_cost is PostgreSQL's own row-count estimate
-used as the QUBO weight.
+This is the join order chosen by the hybrid Qiskit pipeline:
+candidate spanning trees of the predicate graph were generated
+classically, QAOA on AerSimulator picked the lowest-cost tree, and
+DFS linearisation produced the connected order printed above.
 
-All 13 tables should appear exactly once, with step values 1..13.
+Each row is one table in the chosen JOIN order; estimated_cost is
+PostgreSQL's own row-count estimate. The order is connected — every
+new relation shares a predicate edge with at least one already in
+scope — so PG never has to fall back to a Cartesian product.
 
-Next: ./04_dwave_solver.sh — same query, real D-Wave QPU (needs a
-token).
+Next: ./05_teardown.sh
 EOF

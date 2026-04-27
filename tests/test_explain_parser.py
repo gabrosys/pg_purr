@@ -46,8 +46,11 @@ def test_parse_extracts_row_counts():
     assert graph.row_counts["c"] == 5000
 
 
-def test_parse_generates_costs():
+def test_parse_returns_empty_edges_by_default():
     graph = parse_explain_json(SAMPLE_EXPLAIN)
-    assert ("c", "o") in graph.costs
-    assert ("o", "c") in graph.costs
-    assert graph.costs[("c", "o")] > 0
+    assert graph.edges == set()
+
+
+def test_parse_handles_empty_input():
+    assert parse_explain_json([]) == JoinGraph()
+    assert parse_explain_json([{}]) == JoinGraph()
