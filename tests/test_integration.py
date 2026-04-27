@@ -101,7 +101,7 @@ def test_prng_random_returns_float(conn):
 def test_pg_purr_version(conn):
     cur = conn.cursor()
     cur.execute("SELECT purr.pg_purr_version()")
-    assert cur.fetchone()[0] == "0.1.0"
+    assert cur.fetchone()[0] == "0.2.0"
     cur.close()
 
 
@@ -138,4 +138,63 @@ def test_quantum_query_plan_basic(conn):
     assert len(rows) == 2
     table_names = {row[1] for row in rows}
     assert table_names == {"test_a", "test_b"}
+    cur.close()
+
+
+def test_quantum_query_rewrite_returns_select(conn):
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT purr.quantum_query_rewrite("
+        "'SELECT * FROM public.test_a "
+        "JOIN public.test_b ON public.test_a.id = public.test_b.a_id')"
+    )
+    rewritten = cur.fetchone()[0]
+    assert isinstance(rewritten, str)
+    # Caller is responsible for the GUC; the function must not bundle it.
+    assert "SET LOCAL" not in rewritten
+    assert rewritten.lstrip().upper().startswith("SELECT")
+    # Both tables must appear in the rewritten FROM.
+    assert "test_a" in rewritten
+    assert "test_b" in rewritten
+    cur.close()
+
+
+def test_quantum_query_rewrite_preserves_semantics(conn):
+    """The rewritten query must return the same rows as the original."""
+    original = (
+        "SELECT public.test_a.id, public.test_b.id "
+        "FROM public.test_a "
+        "JOIN public.test_b ON public.test_a.id = public.test_b.a_id "
+        "ORDER BY public.test_a.id, public.test_b.id"
+    )
+    cur = conn.cursor()
+    cur.execute(original)
+    expected = cur.fetchall()
+
+    cur.execute("SELECT purr.quantum_query_rewrite(%s)", (original,))
+    rewritten = cur.fetchone()[0]
+
+    # SET LOCAL only takes effect inside an explicit transaction;
+    # the shared `conn` fixture is autocommit, so flip it briefly.
+    conn.autocommit = False
+    try:
+        cur.execute("SET LOCAL join_collapse_limit = 1")
+        cur.execute(rewritten)
+        actual = cur.fetchall()
+        conn.commit()
+    finally:
+        conn.autocommit = True
+
+    assert actual == expected
+    cur.close()
+
+
+def test_quantum_query_rewrite_rejects_outer_join(conn):
+    cur = conn.cursor()
+    with pytest.raises(psycopg2.errors.InternalError_):
+        cur.execute(
+            "SELECT purr.quantum_query_rewrite("
+            "'SELECT * FROM public.test_a "
+            "LEFT JOIN public.test_b ON public.test_a.id = public.test_b.a_id')"
+        )
     cur.close()

@@ -1,16 +1,14 @@
 """Unit tests for the SQL query rewriter."""
 
 import pytest
-from pglast import parse_sql
+import sqlglot
 
 from pg_purr.planner.query_rewriter import rewrite_query
 from pg_purr.planner.query_validator import UnsupportedQueryError
 
 
-def _strip_set_local(sql: str) -> str:
-    prefix = "SET LOCAL join_collapse_limit = 1;"
-    assert sql.startswith(prefix)
-    return sql[len(prefix) :].lstrip()
+def _parse(sql: str):
+    return sqlglot.parse(sql, read="postgres")
 
 
 def test_rewrites_three_way_inner_join():
@@ -20,10 +18,9 @@ def test_rewrites_three_way_inner_join():
         "JOIN products p ON o.prod_id = p.id"
     )
     out = rewrite_query(query, ["c", "p", "o"])
-    body = _strip_set_local(out)
 
     # Output must round-trip through the parser.
-    parsed = parse_sql(body)
+    parsed = _parse(out)
     assert len(parsed) == 1
 
     assert out.index("customers") < out.index("products")
@@ -33,10 +30,44 @@ def test_rewrites_three_way_inner_join():
 def test_hoists_on_quals_into_where():
     query = "SELECT * FROM orders o JOIN customers c ON o.cust_id = c.id WHERE o.total > 100"
     out = rewrite_query(query, ["c", "o"])
-    body = _strip_set_local(out)
 
-    assert "o.total > 100" in body
-    assert "o.cust_id = c.id" in body
+    assert "o.total > 100" in out
+    assert "o.cust_id = c.id" in out
+
+
+def test_hoists_multi_condition_on_into_where():
+    # Catnap demo shape: a single ON clause that ANDs two equalities
+    # across three tables. Both must end up in the WHERE clause.
+    query = (
+        "SELECT * FROM shipments sh "
+        "JOIN orders o ON o.id = sh.order_id "
+        "JOIN shipment_items si ON si.shipment_id = sh.id "
+        "                       AND si.order_item_id = o.id"
+    )
+    out = rewrite_query(query, ["si", "sh", "o"])
+    parsed = _parse(out)
+    assert len(parsed) == 1
+
+    # Original ON predicates must all appear in WHERE.
+    where_clause = out.split(" WHERE ", 1)[1]
+    assert "si.shipment_id = sh.id" in where_clause
+    assert "si.order_item_id = o.id" in where_clause
+    assert "o.id = sh.order_id" in where_clause
+    # Joins must use ON TRUE placeholders (real predicates moved to
+    # WHERE), not the original predicates.
+    from_clause = out.split(" WHERE ", 1)[0]
+    assert "si.shipment_id" not in from_clause
+    assert "si.order_item_id" not in from_clause
+
+
+def test_returned_sql_has_no_set_local_prefix():
+    query = "SELECT * FROM a JOIN b ON a.id = b.id"
+    out = rewrite_query(query, ["b", "a"])
+
+    # Caller is responsible for pinning join_collapse_limit; the
+    # rewriter must not bundle the GUC change into the returned text.
+    assert "SET LOCAL" not in out
+    assert out.lstrip().upper().startswith("SELECT")
 
 
 def test_rejects_multi_statement():
@@ -76,25 +107,22 @@ def test_rejects_order_mismatch():
 def test_accepts_schema_qualified_tables():
     query = "SELECT * FROM public.orders o JOIN analytics.customers c ON o.cust_id = c.id"
     out = rewrite_query(query, ["c", "o"])
-    body = _strip_set_local(out)
 
-    parsed = parse_sql(body)
+    parsed = _parse(out)
     assert len(parsed) == 1
-    assert "analytics" in body
-    assert "public" in body
+    assert "analytics" in out
+    assert "public" in out
 
 
 def test_string_literal_with_join_keyword():
     query = "SELECT * FROM orders o JOIN customers c ON o.cust_id = c.id WHERE o.note = 'JOIN ME'"
     out = rewrite_query(query, ["c", "o"])
-    body = _strip_set_local(out)
-    parsed = parse_sql(body)
+    parsed = _parse(out)
     assert len(parsed) == 1
 
 
 def test_nested_parens_in_on_condition():
     query = "SELECT * FROM a JOIN b ON ((a.x = b.x) AND (a.y = b.y))"
     out = rewrite_query(query, ["b", "a"])
-    body = _strip_set_local(out)
-    parsed = parse_sql(body)
+    parsed = _parse(out)
     assert len(parsed) == 1

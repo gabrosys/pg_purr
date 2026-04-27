@@ -14,7 +14,7 @@ A PostgreSQL extension (via PL/Python) that brings quantum computing capabilitie
 ## Requirements
 
 - PostgreSQL 17 or 18 with `plpython3u`
-- Python 3.11+ with: `dwave-neal`, `dimod`, `requests`, `numpy`, `pglast`
+- Python 3.11+ with: `dwave-neal`, `dimod`, `requests`, `numpy`, `sqlglot`
 - Optional: `dwave-system` for real D-Wave quantum hardware
 
 ## Quick start
@@ -86,12 +86,25 @@ All pg_purr objects live in the `purr` schema. Address them with a fully-qualifi
 ## SQL functions
 
 ```sql
--- Quantum Query Planner: get an optimal JOIN order for a complex query.
+-- Quantum Query Planner (advisory): get the optimal JOIN order for a
+-- complex query as a list of (step, table_name, estimated_cost) rows.
 -- Queries must use fully-qualified table names.
 SELECT * FROM purr.quantum_query_plan(
     'SELECT ... FROM public.t1 JOIN public.t2 ON ... (15+ tables)',
     use_dwave := false
 );
+
+-- Quantum Query Rewrite: same pipeline, but returns the rewritten
+-- SELECT ready for EXECUTE. Wrap in a transaction with
+-- join_collapse_limit = 1 so PG honours the order verbatim.
+SELECT purr.quantum_query_rewrite(
+    'SELECT ... FROM public.t1 JOIN public.t2 ON ...',
+    use_dwave := false
+) AS rewritten \gset
+BEGIN;
+SET LOCAL join_collapse_limit = 1;
+EXPLAIN ANALYZE :rewritten ;
+COMMIT;
 
 -- QRNG: get a true quantum random number in [0, 1).
 -- Requires a populated entropy pool (see "Running the entropy filler").
@@ -140,6 +153,7 @@ GRANT USAGE ON SCHEMA purr TO your_role;
 GRANT EXECUTE ON FUNCTION purr.quantum_random() TO your_role;
 GRANT EXECUTE ON FUNCTION purr.quantum_random_in_range(FLOAT8, FLOAT8) TO your_role;
 GRANT EXECUTE ON FUNCTION purr.quantum_query_plan(TEXT, BOOLEAN) TO your_role;
+GRANT EXECUTE ON FUNCTION purr.quantum_query_rewrite(TEXT, BOOLEAN) TO your_role;
 GRANT EXECUTE ON FUNCTION purr.prng_random() TO your_role;
 ```
 
@@ -164,12 +178,14 @@ The filler is safe to run as a long-lived service (systemd, Kubernetes Deploymen
 ```
   PostgreSQL 17 / 18
   ├── purr schema
-  │   ├── quantum_query_plan()  ──> pg_purr.planner
+  │   ├── quantum_query_plan()     ──> pg_purr.planner.pipeline
+  │   ├── quantum_query_rewrite()  ──> pg_purr.planner.pipeline + query_rewriter
   │   │   ├── query_validator  (plpy.prepare + semicolon reject)
   │   │   ├── explain_parser   (EXPLAIN JSON → JoinGraph)
   │   │   ├── qubo_builder     (JoinGraph → QUBO Hamiltonian)
   │   │   ├── solver           (QUBO → optimal order via annealing)
-  │   │   └── query_rewriter   (reorder SQL JOINs via AST)
+  │   │   ├── pipeline         (validate → EXPLAIN → QUBO → solve)
+  │   │   └── query_rewriter   (reorder SQL JOINs via sqlglot AST)
   │   ├── quantum_random()     ──> quantum_entropy pool (UNLOGGED)
   │   ├── quantum_random_in_range(low, high)
   │   ├── prng_random()        ──> SQL random() wrapper
