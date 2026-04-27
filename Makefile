@@ -8,7 +8,7 @@ SHELL := /bin/bash
 PG_VERSION ?= 17
 PG_CONFIG  ?= pg_config
 EXT_NAME    = pg_purr
-EXT_VERSION = 0.1.0
+EXT_VERSION = 0.2.0
 SHAREDIR    = $(shell $(PG_CONFIG) --sharedir 2>/dev/null)
 EXTDIR      = $(SHAREDIR)/extension
 COMPOSE     = docker compose -f docker/docker-compose.test.yaml
@@ -60,8 +60,8 @@ lock-deps: ## Regenerate hash-pinned requirements files
 pg-install: ## Install extension files into $(pg_config --sharedir)/extension
 	@test -n "$(SHAREDIR)" || { echo "pg_config not found in PATH"; exit 1; }
 	install -m 0644 pg_purr.control $(EXTDIR)/
-	install -m 0644 sql/extension/$(EXT_NAME)--$(EXT_VERSION).sql $(EXTDIR)/
-	@echo "Installed. Run: CREATE EXTENSION pg_purr;"
+	install -m 0644 sql/extension/$(EXT_NAME)--*.sql $(EXTDIR)/
+	@echo "Installed. Run: CREATE EXTENSION pg_purr; (or ALTER EXTENSION pg_purr UPDATE)"
 
 pg-uninstall: ## Remove extension files from the PG share dir
 	@test -n "$(SHAREDIR)" || { echo "pg_config not found in PATH"; exit 1; }

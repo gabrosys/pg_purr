@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pg_purr"
-version = "0.1.0"
+version = "0.2.0"
 description = "PostgreSQL Unified Random & Routing — quantum computing for your database"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [{name = "Gabriele Rossini"}]
-keywords = ["postgresql", "quantum", "qrng", "query-planner", "plpython3u", "annealing"]
+keywords = ["postgresql", "quantum", "qrng", "query-planner", "plpython3u", "qiskit"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -21,11 +21,15 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "dwave-neal>=0.6",
-    "dimod>=0.12",
-    "requests>=2.31",
+    "qiskit~=2.4",
+    "qiskit-aer~=0.17",
+    "qiskit-algorithms~=0.4",
+    "qiskit-optimization~=0.7",
+    "qiskit-ibm-runtime~=0.46",
+    "networkx>=3.2",
     "numpy>=1.26",
-    "pglast>=6,<8",
+    "requests>=2.31",
+    "sqlglot>=25,<27",
 ]
 
 [project.optional-dependencies]
@@ -33,8 +37,8 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "psycopg2-binary>=2.9",
+    "hypothesis>=6.100",
 ]
-dwave = ["dwave-system>=1.0"]
 
 [project.scripts]
 pg-purr-filler = "pg_purr.qrng.__main__:main"

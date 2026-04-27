@@ -1,10 +1,12 @@
 # Compose override for the planner demo.
-# Layered on top of docker/docker-compose.test.yaml to inject
-# DWAVE_API_TOKEN into the postgres container's environment.
-#
-# An empty / unset token still starts the container fine — step 04 handles
-# the "no token" case explicitly.
+# Layered on top of docker/docker-compose.test.yaml to forward the
+# optional QISKIT_IBM_TOKEN into the postgres container so that the
+# planner can target an IBM Quantum backend instead of the local
+# AerSimulator. An empty / unset token leaves the planner running on
+# the simulator, which is the default.
 services:
   postgres:
     environment:
-      DWAVE_API_TOKEN: ${DWAVE_API_TOKEN:-}
+      QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
+      QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
+      QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}

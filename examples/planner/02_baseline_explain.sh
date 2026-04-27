@@ -29,9 +29,9 @@ this is a 13-way join and geqo_threshold = 12, PostgreSQL used its
 genetic optimiser (a heuristic) rather than exhaustive dynamic
 programming to pick an order.
 
-The next two steps run the same query through pg_purr's QUBO-based
-planner — first classically on the CPU, then on a real D-Wave QPU if
-you supplied a token.
+The next step runs the same query through pg_purr's hybrid Qiskit
+pipeline (QAOA on AerSimulator) so you can compare the chosen order
+against PG's own.
 
 Next: ./03_local_solver.sh
 EOF
