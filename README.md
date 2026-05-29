@@ -183,6 +183,21 @@ Platform](https://quantum.cloud.ibm.com/). The Open Plan currently
 provides ~10 minutes of QPU time per 28-day rolling window — fine
 for occasional demonstration runs, not for repeated CI.
 
+### QAOA execution mode (optional)
+
+Two further environment variables tune the QAOA selector, on either
+backend (read from the PostgreSQL server process environment):
+
+- `PG_PURR_QAOA_MODE` — `variational` (default) runs the full COBYLA
+  optimisation loop; `fixed_angle` runs a single fixed-angle QAOA
+  circuit. On real hardware `variational` submits one QPU job per
+  COBYLA iteration (tens of queued jobs), while `fixed_angle` is a
+  single job. `fixed_angle` is recommended on the free Open Plan,
+  where Sessions (which would batch the jobs) are unavailable.
+- `PG_PURR_QAOA_MAX_ITER` — COBYLA iteration cap for `variational`
+  mode (default 80). Lowering it cuts QPU job count; it has no effect
+  in `fixed_angle` mode.
+
 ### Network egress (entropy pool fallback)
 
 `purr.quantum_random()` never performs network I/O from inside a
@@ -244,7 +259,7 @@ Kubernetes Deployment, Docker Compose service).
   │   │   ├── predicate_graph    (extract edges from SQL via sqlglot)
   │   │   ├── cost_model         (edge weights + true left-deep cost)
   │   │   ├── spanning_trees     (k edge-perturbed MST candidates)
-  │   │   ├── tree_selector      (QAOA on AerSimulator → best candidate)
+  │   │   ├── tree_selector      (QAOA on AerSimulator or IBM Quantum → best candidate)
   │   │   ├── linearizer         (DFS pre-order → connected join order)
   │   │   └── query_rewriter     (sqlglot AST rewrite)
   │   ├── quantum_random()       ──> quantum_entropy pool (UNLOGGED)

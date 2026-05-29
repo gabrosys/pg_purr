@@ -103,7 +103,7 @@ Five short lessons, one script each:
 | 0 | `00_setup.sh` | Boot the container, install the `pg_purr` extension, report the IBM-token status. |
 | 1 | `01_seed_schema.sh` | Create the retail schema and seed sample rows. Print per-table row counts. |
 | 2 | `02_baseline_explain.sh` | Show PostgreSQL's own plan for the multi-way JOIN (GEQO is active beyond `geqo_threshold = 12`). |
-| 3 | `03_local_solver.sh` | Call `purr.quantum_query_rewrite(...)`. QAOA on `AerSimulator`, deterministic. Works without a token. |
+| 3 | `03_local_solver.sh` | Call `purr.quantum_query_plan(...)`. QAOA via Qiskit (local `AerSimulator` by default, deterministic; IBM Quantum if a token is set). Works without a token. |
 | 5 | `05_teardown.sh` | Stop the container, remove the volume. |
 
 Run them in order:
@@ -135,6 +135,8 @@ scripts:
 | `QISKIT_IBM_TOKEN` | — | 00 | Enables the IBM Quantum hardware path. Usually set via `examples/planner/.env`. |
 | `QISKIT_IBM_INSTANCE` | — | 00 | IBM Quantum instance identifier (CRN or hub/group/project). |
 | `QISKIT_IBM_CHANNEL` | `ibm_quantum_platform` | 00 | Runtime channel. |
+| `PG_PURR_QAOA_MODE` | `variational` | postgres env | QAOA mode: `variational` (full COBYLA loop) or `fixed_angle` (one circuit, one QPU job). Use `fixed_angle` on the free Open Plan. |
+| `PG_PURR_QAOA_MAX_ITER` | `80` | postgres env | COBYLA iteration cap for `variational` mode. |
 
 ## Troubleshooting
 
@@ -152,10 +154,13 @@ has a relation with no join predicate to the rest. Add the missing
 join condition or drop the dangling relation. The planner refuses
 to produce Cartesian-prone orders by design.
 
-**The rewrite is unexpectedly slow.** QAOA at `reps=2` on
+**The plan is unexpectedly slow.** QAOA at `reps=2` on
 `AerSimulator` for ~16 candidate trees runs in seconds. If you see
-minutes, you are probably running on the real-QPU path with a long
-queue — set `unset QISKIT_IBM_TOKEN` to fall back to the simulator.
+minutes, you are on the real-QPU path: in the default `variational`
+mode each COBYLA iteration is a separate QPU job (tens of queued
+jobs). Set `PG_PURR_QAOA_MODE=fixed_angle` in your `.env` to run a
+single QPU job instead, or `unset QISKIT_IBM_TOKEN` to fall back to
+the simulator entirely.
 
 **After step 5 `docker ps` shows nothing related to pg_purr.**
 That is the expected state. Re-run `00_setup.sh` to start over.

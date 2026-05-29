@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Run purr.quantum_query_plan on the demo query.
-# QAOA on AerSimulator — no token needed, deterministic.
+# QAOA via Qiskit: local AerSimulator by default (no token, deterministic),
+# or real IBM Quantum hardware when QISKIT_IBM_TOKEN is set.
 
 set -euo pipefail
 
@@ -24,7 +25,8 @@ cat <<'EOF'
 
 This is the join order chosen by the hybrid Qiskit pipeline:
 candidate spanning trees of the predicate graph were generated
-classically, QAOA on AerSimulator picked the lowest-cost tree, and
+classically, QAOA picked the lowest-cost tree (on the local
+AerSimulator, or real IBM Quantum hardware if a token is set), and
 DFS linearisation produced the connected order printed above.
 
 Each row is one table in the chosen JOIN order; estimated_cost is
