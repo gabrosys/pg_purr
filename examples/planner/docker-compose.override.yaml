@@ -10,3 +10,10 @@ services:
       QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
       QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
       QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}
+      # COBYLA iteration cap for the QAOA selector. Lower it to cut the
+      # number of QPU jobs per plan call (quota/cost lever). Unset → 80.
+      PG_PURR_QAOA_MAX_ITER: ${PG_PURR_QAOA_MAX_ITER:-}
+      # QAOA execution mode: 'variational' (default; full COBYLA loop,
+      # many QPU jobs) or 'fixed_angle' (one circuit, one QPU job — far
+      # lower latency on the free Open Plan, no variational tuning).
+      PG_PURR_QAOA_MODE: ${PG_PURR_QAOA_MODE:-}
