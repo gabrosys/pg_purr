@@ -284,7 +284,7 @@ def test_retail_shape_rewrite_returns_connected_select(conn, retail_schema):
 
     parsed = sqlglot.parse_one(rewritten, read="postgres")
     aliases: set[str] = set()
-    from_ = parsed.args.get("from")
+    from_ = parsed.args.get("from_")
     if from_ is not None and from_.this is not None:
         aliases.add(from_.this.alias or from_.this.name)
     for join in parsed.args.get("joins") or []:

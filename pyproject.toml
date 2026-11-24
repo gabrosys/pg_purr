@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68.0"]
+requires = ["setuptools>=84"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -21,23 +21,23 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "qiskit~=2.4",
-    "qiskit-aer~=0.17",
+    "qiskit~=2.6",
+    "qiskit-aer~=0.18",
     "qiskit-algorithms~=0.4",
     "qiskit-optimization~=0.7",
-    "qiskit-ibm-runtime~=0.46",
-    "networkx>=3.2",
-    "numpy>=1.26",
-    "requests>=2.31",
-    "sqlglot>=25,<27",
+    "qiskit-ibm-runtime~=0.52",
+    "networkx>=3.7",
+    "numpy>=2.5",
+    "requests>=2.34",
+    "sqlglot>=30,<31",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.4",
-    "psycopg2-binary>=2.9",
-    "hypothesis>=6.100",
+    "pytest>=9.2",
+    "ruff>=0.17",
+    "psycopg2-binary>=2.9.13",
+    "hypothesis>=6.170",
 ]
 
 [project.scripts]

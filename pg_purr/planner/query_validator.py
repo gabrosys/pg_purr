@@ -77,10 +77,10 @@ def validate_supported_shape(query: str) -> list[str]:
 
     if not isinstance(parsed, exp.Select):
         raise UnsupportedQueryError(f"only SELECT is supported (got {type(parsed).__name__})")
-    if parsed.args.get("with"):
+    if parsed.args.get("with_"):
         raise UnsupportedQueryError("CTEs are not supported")
 
-    from_ = parsed.args.get("from")
+    from_ = parsed.args.get("from_")
     if from_ is None:
         raise UnsupportedQueryError("missing FROM clause")
     if from_.expressions:
