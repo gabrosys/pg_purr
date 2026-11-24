@@ -165,3 +165,9 @@ def test_nested_parens_in_on_condition():
     out = rewrite_query(query, ["b", "a"])
     parsed = _parse(out)
     assert len(parsed) == 1
+
+
+def test_cte_is_rejected():
+    query = "WITH t AS (SELECT 1 AS id) SELECT * FROM orders o JOIN t ON o.id = t.id"
+    with pytest.raises(UnsupportedQueryError, match="CTEs"):
+        rewrite_query(query, ["o", "t"])

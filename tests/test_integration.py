@@ -100,8 +100,12 @@ def test_prng_random_returns_float(conn):
 
 def test_pg_purr_version(conn):
     cur = conn.cursor()
-    cur.execute("SELECT purr.pg_purr_version()")
-    assert cur.fetchone()[0] == "0.2.0"
+    cur.execute(
+        "SELECT purr.pg_purr_version(), default_version"
+        " FROM pg_catalog.pg_available_extensions WHERE name = 'pg_purr'"
+    )
+    installed, default = cur.fetchone()
+    assert installed == default
     cur.close()
 
 
@@ -284,7 +288,7 @@ def test_retail_shape_rewrite_returns_connected_select(conn, retail_schema):
 
     parsed = sqlglot.parse_one(rewritten, read="postgres")
     aliases: set[str] = set()
-    from_ = parsed.args.get("from")
+    from_ = parsed.args.get("from_")
     if from_ is not None and from_.this is not None:
         aliases.add(from_.this.alias or from_.this.name)
     for join in parsed.args.get("joins") or []:

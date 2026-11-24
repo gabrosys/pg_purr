@@ -49,9 +49,9 @@ from __future__ import annotations
 
 import os
 from collections.abc import Sequence
-from typing import Any, TypeVar
+from typing import Any
 
-from qiskit.circuit.library import QAOAAnsatz
+from qiskit.circuit.library import qaoa_ansatz
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit_aer import AerSimulator
 from qiskit_aer.primitives import SamplerV2
@@ -60,8 +60,6 @@ from qiskit_algorithms.optimizers import COBYLA
 from qiskit_optimization import QuadraticProgram
 from qiskit_optimization.algorithms import MinimumEigenOptimizer
 from qiskit_optimization.converters import QuadraticProgramToQubo
-
-T = TypeVar("T")
 
 _DEFAULT_MAX_ITER = 80
 _FIXED_ANGLE_SHOTS = 8192
@@ -146,7 +144,7 @@ def _transpiled_qaoa_ansatz(qp: QuadraticProgram, reps: int, pass_manager):
     """
     qubo = QuadraticProgramToQubo().convert(qp)
     cost_operator, _ = qubo.to_ising()
-    ansatz = QAOAAnsatz(cost_operator, reps=reps)
+    ansatz = qaoa_ansatz(cost_operator, reps=reps)
     ansatz.measure_all()
     return qubo, pass_manager.run(ansatz)
 
@@ -179,7 +177,7 @@ def _lowest_cost_feasible(
     return best
 
 
-def _solve_qaoa_hardware(
+def _solve_qaoa_hardware[T](
     qp: QuadraticProgram,
     candidates: list[T],
     costs: list[float],
@@ -231,7 +229,7 @@ def _solve_qaoa_hardware(
     return candidates[chosen]
 
 
-def _solve_qaoa_fixed_angle(
+def _solve_qaoa_fixed_angle[T](
     qp: QuadraticProgram,
     candidates: list[T],
     costs: list[float],
@@ -263,7 +261,7 @@ def _solve_qaoa_fixed_angle(
     return candidates[chosen]
 
 
-def pick(
+def pick[T](
     candidates: list[T],
     costs: list[float],
     seed: int = 42,

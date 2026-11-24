@@ -101,10 +101,10 @@ def rewrite_query(original_query: str, optimal_order: list[str]) -> str:
 
     if not isinstance(parsed, exp.Select):
         raise UnsupportedQueryError(f"only SELECT is supported (got {type(parsed).__name__})")
-    if parsed.args.get("with"):
+    if parsed.args.get("with_"):
         raise UnsupportedQueryError("CTEs are not supported")
 
-    from_ = parsed.args.get("from")
+    from_ = parsed.args.get("from_")
     if from_ is None:
         raise UnsupportedQueryError("missing FROM clause")
     if from_.expressions:
@@ -173,7 +173,7 @@ def rewrite_query(original_query: str, optimal_order: list[str]) -> str:
     # connecting predicate would force a Cartesian product under
     # `join_collapse_limit = 1`; refuse instead of emitting
     # `ON TRUE`. The pipeline guarantees connectivity upstream.
-    parsed.set("from", exp.From(this=items[optimal_order[0]].copy()))
+    parsed.set("from_", exp.From(this=items[optimal_order[0]].copy()))
     new_joins = []
     for step in range(1, len(optimal_order)):
         on_expr = _and_chain(on_by_step[step])

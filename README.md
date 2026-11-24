@@ -1,10 +1,16 @@
-[![CI](https://github.com/gabrosys/pg_purr/actions/workflows/ci.yaml/badge.svg)](https://github.com/gabrosys/pg_purr/actions/workflows/ci.yaml)
+[![CI](https://github.com/gabrosys/pg_purr/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrosys/pg_purr/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 # pg_purr
 
 **P**ostgreSQL **U**nified **R**andom & **R**outing.
+
+> [!WARNING]
+> pg_purr is a demonstration project, implemented with the help of
+> AI tools. It is not intended for production use: run it only for
+> experiments, learning and demos, never against databases holding
+> data you care about.
 
 A PostgreSQL extension (via PL/Python) that brings quantum
 computing to your database:
@@ -25,7 +31,7 @@ computing to your database:
 ## Requirements
 
 - PostgreSQL 17 or 18 with `plpython3u`
-- Python 3.11+ with: `qiskit`, `qiskit-aer`, `qiskit-algorithms`,
+- Python 3.12+ with: `qiskit`, `qiskit-aer`, `qiskit-algorithms`,
   `qiskit-optimization`, `qiskit-ibm-runtime`, `networkx`, `numpy`,
   `requests`, `sqlglot`
 
@@ -282,6 +288,24 @@ Then optionally:
 ```bash
 make pg-uninstall
 ```
+
+## Releases
+
+Releases are cut by [release-please](https://github.com/googleapis/release-please)
+from the Conventional Commit messages merged into `main`. Each
+release publishes:
+
+- container images for `linux/amd64` and `linux/arm64`:
+  `ghcr.io/gabrosys/pg_purr:<version>-pg17` and `-pg18`, plus the
+  moving `<major>.<minor>-pg17` / `-pg18` tags;
+- the sdist and wheel, attached to the GitHub release.
+
+The extension SQL version (`default_version` in `pg_purr.control`,
+returned by `purr.pg_purr_version()`) is versioned separately from
+the package and changes only when the SQL changes. A schema change
+ships `sql/extension/pg_purr--<new>.sql` and the upgrade script
+`pg_purr--<old>--<new>.sql`; `make check-ext-version` (run in CI)
+fails when the control file names a version with no script.
 
 ## License
 

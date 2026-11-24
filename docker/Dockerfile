@@ -5,7 +5,7 @@ ARG PG_VERSION=17
 ############################
 # Stage 1 — builder
 ############################
-FROM postgres:${PG_VERSION}-bookworm AS builder
+FROM postgres:${PG_VERSION}-trixie AS builder
 
 ARG PG_VERSION
 ENV PIP_NO_CACHE_DIR=1 \
@@ -32,17 +32,19 @@ RUN pip install --require-hashes --no-deps -r /tmp/requirements.txt
 
 COPY pyproject.toml README.md /opt/pg_purr/
 COPY pg_purr/ /opt/pg_purr/pg_purr/
-RUN pip install --no-deps /opt/pg_purr/
+RUN pip install --no-deps --no-build-isolation /opt/pg_purr/
 
 ############################
 # Stage 2 — runtime
 ############################
-FROM postgres:${PG_VERSION}-bookworm AS runtime
+FROM postgres:${PG_VERSION}-trixie AS runtime
 
 ARG PG_VERSION
 ARG VCS_REF=unknown
 ARG BUILD_DATE=1970-01-01T00:00:00Z
+# x-release-please-start-version
 ARG VERSION=0.2.0
+# x-release-please-end
 
 LABEL org.opencontainers.image.title="pg_purr" \
       org.opencontainers.image.description="PostgreSQL Unified Random & Routing" \
@@ -52,7 +54,7 @@ LABEL org.opencontainers.image.title="pg_purr" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.base.name="docker.io/library/postgres:${PG_VERSION}-bookworm"
+      org.opencontainers.image.base.name="docker.io/library/postgres:${PG_VERSION}-trixie"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -83,5 +85,6 @@ USER root
 COPY docker/requirements-dev.txt /tmp/requirements-dev.txt
 RUN /opt/pg_purr/.venv/bin/pip install --require-hashes --no-deps \
         -r /tmp/requirements-dev.txt
+COPY --chown=postgres:postgres pyproject.toml /opt/pg_purr/
 COPY --chown=postgres:postgres tests/ /opt/pg_purr/tests/
 USER postgres
