@@ -83,5 +83,6 @@ USER root
 COPY docker/requirements-dev.txt /tmp/requirements-dev.txt
 RUN /opt/pg_purr/.venv/bin/pip install --require-hashes --no-deps \
         -r /tmp/requirements-dev.txt
+COPY --chown=postgres:postgres pyproject.toml /opt/pg_purr/
 COPY --chown=postgres:postgres tests/ /opt/pg_purr/tests/
 USER postgres
