@@ -1,0 +1,39 @@
+name: e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: e2e suite to run
+        type: choice
+        options: [qrng, planner]
+        default: planner
+      pg_version:
+        description: PostgreSQL major version
+        type: choice
+        options: ["17", "18"]
+        default: "17"
+
+permissions: {}
+
+jobs:
+  e2e:
+    name: e2e (${{ inputs.suite }}, PG ${{ inputs.pg_version }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run suite
+        env:
+          SUITE: ${{ inputs.suite }}
+          PG_VERSION: ${{ inputs.pg_version }}
+          # Optional: without a token the planner runs on AerSimulator.
+          QISKIT_IBM_TOKEN: ${{ inputs.suite == 'planner' && secrets.QISKIT_IBM_TOKEN || '' }}
+          QISKIT_IBM_INSTANCE: ${{ inputs.suite == 'planner' && secrets.QISKIT_IBM_INSTANCE || '' }}
+          QISKIT_IBM_CHANNEL: ${{ inputs.suite == 'planner' && vars.QISKIT_IBM_CHANNEL || '' }}
+          PG_PURR_QAOA_MODE: ${{ inputs.suite == 'planner' && vars.PG_PURR_QAOA_MODE || '' }}
+        run: make "e2e-${SUITE}" PG_VERSION="${PG_VERSION}"

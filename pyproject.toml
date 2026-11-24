@@ -34,6 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "build>=1.6",
     "pytest>=9.2",
     "ruff>=0.17",
     "psycopg2-binary>=2.9.13",
