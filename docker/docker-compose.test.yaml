@@ -7,7 +7,7 @@ services:
       args:
         PG_VERSION: ${PG_VERSION:-17}
         VCS_REF: ${VCS_REF:-dev}
-        VERSION: ${VERSION:-0.2.0} # x-release-please-version
+        VERSION: ${VERSION:-0.3.0} # x-release-please-version
     container_name: pg-purr-test
     environment:
       POSTGRES_DB: pg_purr_test

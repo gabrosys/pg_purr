@@ -43,7 +43,7 @@ ARG PG_VERSION
 ARG VCS_REF=unknown
 ARG BUILD_DATE=1970-01-01T00:00:00Z
 # x-release-please-start-version
-ARG VERSION=0.2.0
+ARG VERSION=0.3.0
 # x-release-please-end
 
 LABEL org.opencontainers.image.title="pg_purr" \
