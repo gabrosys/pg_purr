@@ -1,6 +1,6 @@
 [![CI](https://github.com/gabrosys/pg_purr/actions/workflows/ci.yaml/badge.svg)](https://github.com/gabrosys/pg_purr/actions/workflows/ci.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 # pg_purr
 
@@ -31,7 +31,7 @@ computing to your database:
 ## Requirements
 
 - PostgreSQL 17 or 18 with `plpython3u`
-- Python 3.11+ with: `qiskit`, `qiskit-aer`, `qiskit-algorithms`,
+- Python 3.12+ with: `qiskit`, `qiskit-aer`, `qiskit-algorithms`,
   `qiskit-optimization`, `qiskit-ibm-runtime`, `networkx`, `numpy`,
   `requests`, `sqlglot`
 

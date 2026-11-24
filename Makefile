@@ -13,6 +13,12 @@ SHAREDIR    = $(shell $(PG_CONFIG) --sharedir 2>/dev/null)
 EXTDIR      = $(SHAREDIR)/extension
 COMPOSE     = docker compose -f docker/docker-compose.test.yaml
 
+# Lock against the same Python minor that plpython3u uses in the image
+# (Debian trixie ships Python 3.13).
+LOCK_IMAGE        ?= python:3.13-slim-trixie
+PIP_TOOLS_VERSION ?= 7.7.0
+LOCK_ARGS         ?=
+
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 	    | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -50,12 +56,15 @@ docker-build: ## Build the pg_purr Docker image
 	    --build-arg PG_VERSION=$(PG_VERSION) \
 	    -t pg_purr:$(PG_VERSION) .
 
-lock-deps: ## Regenerate hash-pinned requirements files
-	pip install --quiet pip-tools
-	pip-compile --quiet --generate-hashes --resolver=backtracking \
-	    --output-file=docker/requirements.txt pyproject.toml
-	pip-compile --quiet --generate-hashes --resolver=backtracking \
-	    --extra=dev --output-file=docker/requirements-dev.txt pyproject.toml
+lock-deps: ## Regenerate hash-pinned requirements (LOCK_ARGS=--upgrade to bump all)
+	docker run --rm --user "$$(id -u):$$(id -g)" -e HOME=/tmp \
+	    -v "$(CURDIR):/src" -w /src $(LOCK_IMAGE) sh -euc '\
+	    python -m pip install --quiet --user pip-tools==$(PIP_TOOLS_VERSION); \
+	    export PATH="$$HOME/.local/bin:$$PATH"; \
+	    pip-compile --quiet $(LOCK_ARGS) --generate-hashes --allow-unsafe --strip-extras \
+	        --output-file=docker/requirements.txt pyproject.toml; \
+	    pip-compile --quiet $(LOCK_ARGS) --generate-hashes --allow-unsafe --strip-extras \
+	        --extra=dev --output-file=docker/requirements-dev.txt pyproject.toml'
 
 pg-install: ## Install extension files into $(pg_config --sharedir)/extension
 	@test -n "$(SHAREDIR)" || { echo "pg_config not found in PATH"; exit 1; }
