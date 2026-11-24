@@ -289,6 +289,24 @@ Then optionally:
 make pg-uninstall
 ```
 
+## Releases
+
+Releases are cut by [release-please](https://github.com/googleapis/release-please)
+from the Conventional Commit messages merged into `main`. Each
+release publishes:
+
+- container images for `linux/amd64` and `linux/arm64`:
+  `ghcr.io/gabrosys/pg_purr:<version>-pg17` and `-pg18`, plus the
+  moving `<major>.<minor>-pg17` / `-pg18` tags;
+- the sdist and wheel, attached to the GitHub release.
+
+The extension SQL version (`default_version` in `pg_purr.control`,
+returned by `purr.pg_purr_version()`) is versioned separately from
+the package and changes only when the SQL changes. A schema change
+ships `sql/extension/pg_purr--<new>.sql` and the upgrade script
+`pg_purr--<old>--<new>.sql`; `make check-ext-version` (run in CI)
+fails when the control file names a version with no script.
+
 ## License
 
 MIT

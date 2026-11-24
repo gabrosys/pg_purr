@@ -100,8 +100,12 @@ def test_prng_random_returns_float(conn):
 
 def test_pg_purr_version(conn):
     cur = conn.cursor()
-    cur.execute("SELECT purr.pg_purr_version()")
-    assert cur.fetchone()[0] == "0.2.0"
+    cur.execute(
+        "SELECT purr.pg_purr_version(), default_version"
+        " FROM pg_catalog.pg_available_extensions WHERE name = 'pg_purr'"
+    )
+    installed, default = cur.fetchone()
+    assert installed == default
     cur.close()
 
 
