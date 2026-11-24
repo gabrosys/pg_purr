@@ -6,6 +6,12 @@
 
 **P**ostgreSQL **U**nified **R**andom & **R**outing.
 
+> [!WARNING]
+> pg_purr is a demonstration project, implemented with the help of
+> AI tools. It is not intended for production use: run it only for
+> experiments, learning and demos, never against databases holding
+> data you care about.
+
 A PostgreSQL extension (via PL/Python) that brings quantum
 computing to your database:
 
